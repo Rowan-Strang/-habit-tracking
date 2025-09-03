@@ -7,17 +7,56 @@
 
 import SwiftUI
 
-struct ContentView: View {
-    var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+struct HabbitItem: Identifiable, Codable {
+    var id = UUID()
+    let name: String
+    let timeMinutes: Int
+}
+
+@Observable
+class Habbits{
+    var items = [HabbitItem](){
+        didSet {
+            if let encoded = try? JSONEncoder().encode(items) {
+                UserDefaults.standard.set(encoded, forKey: "Items")
+            }
         }
-        .padding()
+    }
+    
+    init() {
+        if let savedItems = UserDefaults.standard.data(forKey: "Items") {
+            if let decodedItems = try? JSONDecoder().decode([HabbitItem].self,
+                from: savedItems){
+                items = decodedItems
+                return
+            }
+        }
+        items = []
     }
 }
+
+struct ContentView: View {
+    
+    @State private var habbits = Habbits()
+    
+    var body: some View {
+        NavigationStack {
+            List {
+                Text("Nothing")
+            }
+            .navigationTitle("Habbiter")
+            .toolbar{
+                NavigationLink {
+                    AddingView()
+                } label: {
+                    Image (systemName: "plus")
+            }
+            }
+            
+        }
+            }
+    
+        }
 
 #Preview {
     ContentView()
